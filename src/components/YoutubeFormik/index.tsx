@@ -9,7 +9,7 @@ import {
 import { IYoutubeFormik } from './interface'
 import { object, string } from 'yup'
 import { ErrorMessage as ErrorText } from '../ErrorMessage'
-import { ComponentType } from 'react'
+import { ComponentType, useState } from 'react'
 
 export function YoutubeFormik() {
   const validationSchema = object({
@@ -33,106 +33,156 @@ export function YoutubeFormik() {
     phoneNumbers: [''],
   }
 
-  const onSubmit = (values: IYoutubeFormik) => console.log(values)
+  const savedValues = {
+    name: 'Juan',
+    email: 'juan@cordage.io',
+    channel: 'JuanCode',
+    comments: 'Hello',
+    address: '16 de septiembre',
+    social: {
+      facebook: 'JuanFacebook',
+      twitter: 'JuanTwitter',
+    },
+    phoneNumbers: ['5561968881'],
+  }
+
+  const [formValues, setFormValues] = useState<null | IYoutubeFormik>(null)
+
+  const onSubmit = (
+    values: IYoutubeFormik,
+    onSubmitProps: any
+  ) => {
+    setTimeout(() => {
+      console.log(values)
+      console.log(onSubmitProps)
+      onSubmitProps.setSubmitting(false)
+      onSubmitProps.resetForm({ values: initialValues })
+    }, 1000)
+  }
 
   return (
     <Formik
-      initialValues={initialValues}
+      initialValues={formValues ?? initialValues}
       onSubmit={onSubmit}
       validationSchema={validationSchema}
+      enableReinitialize
+      // validateOnMount
     >
-      <Form>
-        <div className='form-control'>
-          <label htmlFor='name'>Name</label>
-          <Field type='text' id='name' name='name' />
-          <ErrorMessage name='name' className='error' component='div' />
-        </div>
+      {(formik) => {
+        const { isValid, isSubmitting, dirty } = formik
 
-        <div className='form-control'>
-          <label htmlFor='email'>Email</label>
-          <Field type='email' id='email' name='email' />
-          <ErrorMessage name='email'>
-            {(errorMessage: string) => (
-              <div className='error'>{errorMessage}</div>
-            )}
-          </ErrorMessage>
-        </div>
+        return (
+          <Form>
+            <div className='form-control'>
+              <label htmlFor='name'>Name</label>
+              <Field type='text' id='name' name='name' />
+              <ErrorMessage name='name' className='error' component='div' />
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='channel'>Channel</label>
-          <Field type='text' id='channel' name='channel' />
-          <ErrorMessage
-            name='channel'
-            component={ErrorText as ComponentType<{}>}
-          />
-        </div>
+            <div className='form-control'>
+              <label htmlFor='email'>Email</label>
+              <Field type='email' id='email' name='email' />
+              <ErrorMessage name='email'>
+                {(errorMessage: string) => (
+                  <div className='error'>{errorMessage}</div>
+                )}
+              </ErrorMessage>
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='comments'>Comments</label>
-          <Field as='textarea' id='comments' name='comments' />
-          <ErrorMessage name='comments' className='error' component='div' />
-        </div>
+            <div className='form-control'>
+              <label htmlFor='channel'>Channel</label>
+              <Field type='text' id='channel' name='channel' />
+              <ErrorMessage
+                name='channel'
+                component={ErrorText as ComponentType<{}>}
+              />
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='address'>Address</label>
-          <FastField name='address'>
-            {(props: any) => {
+            <div className='form-control'>
+              <label htmlFor='comments'>Comments</label>
+              <Field as='textarea' id='comments' name='comments' />
+              <ErrorMessage name='comments' className='error' component='div' />
+            </div>
 
-              const { field, meta } = props
+            <div className='form-control'>
+              <label htmlFor='address'>Address</label>
+              <FastField name='address'>
+                {(props: any) => {
+                  const { field, meta } = props
 
-              const { touched, error } = meta
+                  const { touched, error } = meta
 
-              return (
-                <>
-                  <input type='text' id='address' {...field} />
-                  {touched && error && <div className='error'>{error}</div>}
-                </>
-              )
-            }}
-          </FastField>
-        </div>
+                  return (
+                    <>
+                      <input type='text' id='address' {...field} />
+                      {touched && error && <div className='error'>{error}</div>}
+                    </>
+                  )
+                }}
+              </FastField>
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='facebook'>Facebook</label>
-          <Field type='text' id='facebook' name='social.facebook' />
-        </div>
+            <div className='form-control'>
+              <label htmlFor='facebook'>Facebook</label>
+              <Field type='text' id='facebook' name='social.facebook' />
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='twitter'>Twitter</label>
-          <Field type='text' id='twitter' name='social.twitter' />
-        </div>
+            <div className='form-control'>
+              <label htmlFor='twitter'>Twitter</label>
+              <Field type='text' id='twitter' name='social.twitter' />
+            </div>
 
-        <div className='form-control'>
-          <label htmlFor='phoneNumbers'>Phones</label>
-          <FieldArray name='phoneNumbers'>
-            {(fieldArrayProps) => {
-              const { form, push, remove } = fieldArrayProps
-              const { values, errors } = form
-              const { phoneNumbers } = values
+            <div className='form-control'>
+              <label htmlFor='phoneNumbers'>Phones</label>
+              <FieldArray name='phoneNumbers'>
+                {(fieldArrayProps) => {
+                  const { form, push, remove } = fieldArrayProps
+                  const { values, errors } = form
+                  const { phoneNumbers } = values
 
-              return (
-                <>
-                  {phoneNumbers.map((_phoneNumber: string, index: number) => (
-                    <div key={index}>
-                      <Field type='text' name={`phoneNumbers[${index}]`} />
-                      {phoneNumbers.length > 1 && (
-                        <button type='button' onClick={() => remove(index)}>
-                          -
-                        </button>
+                  return (
+                    <>
+                      {phoneNumbers.map(
+                        (_phoneNumber: string, index: number) => (
+                          <div key={index}>
+                            <Field
+                              type='text'
+                              name={`phoneNumbers[${index}]`}
+                            />
+                            {phoneNumbers.length > 1 && (
+                              <button
+                                type='button'
+                                onClick={() => remove(index)}
+                              >
+                                -
+                              </button>
+                            )}
+                            <button type='button' onClick={() => push('')}>
+                              +
+                            </button>
+                          </div>
+                        )
                       )}
-                      <button type='button' onClick={() => push('')}>
-                        +
-                      </button>
-                    </div>
-                  ))}
-                </>
-              )
-            }}
-          </FieldArray>
-        </div>
+                    </>
+                  )
+                }}
+              </FieldArray>
+            </div>
 
-        <button type='submit'>Submit</button>
-      </Form>
+            <button type='button' onClick={() => setFormValues(savedValues)}>
+              Saved Data
+            </button>
+
+            <button type='reset' onClick={() => setFormValues(null)}>
+              Reset Data
+            </button>
+
+            <button type='submit' disabled={!isValid || isSubmitting}>
+              Submit
+            </button>
+          </Form>
+        )
+      }}
     </Formik>
   )
 }
